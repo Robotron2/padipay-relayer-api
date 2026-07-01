@@ -1,0 +1,17 @@
+require('dotenv').config();
+const express = require('express');
+const relayerRoutes = require('./routes/relayer.routes');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+// API Routes
+app.use('/api/relayer', relayerRoutes);
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Stellar Relayer API is running on port ${PORT}`);
+});
