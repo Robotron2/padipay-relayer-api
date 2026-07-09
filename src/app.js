@@ -1,9 +1,9 @@
-require('dotenv').config();
+const config = require('./config/env.config');
 const express = require('express');
 const relayerRoutes = require('./routes/relayer.routes');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.PORT;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
