@@ -1,7 +1,7 @@
 const { loadConfig } = require('./config/env.config');
 const express = require('express');
 const relayerRoutes = require('./routes/relayer.routes');
-
+const healthRoutes = require('./routes/health.routes');
 const errorHandler = require('./middleware/error.middleware');
 
 let config;
@@ -17,17 +17,8 @@ const PORT = config.PORT;
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// Health Check Endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    service: 'padipay-relayer-api',
-    version: '0.1.0',
-    timestamp: new Date().toISOString(),
-  });
-});
-
 // API Routes
+app.use('/health', healthRoutes);
 app.use('/api/relayer', relayerRoutes);
 
 // Error Handling Middleware
