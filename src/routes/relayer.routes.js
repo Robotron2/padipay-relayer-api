@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { validate } = require('../middleware/validate.middleware');
+const { submitEscrowSchema } = require('../validation/schemas/escrow.schema');
 
 // TODO: Import escrow service and horizon service (to be implemented in Phase 4)
 // const escrowService = require('../services/escrow.service');
@@ -9,7 +11,7 @@ const router = express.Router();
  * POST /submit-escrow
  * Endpoint for the WhatsApp bot to request a new escrow action.
  */
-router.post('/submit-escrow', async (req, res) => {
+router.post('/submit-escrow', validate(submitEscrowSchema), async (req, res) => {
   // TODO: Link this route to escrowService.processEscrowAction()
   res.status(200).json({ message: 'submit-escrow route scaffolded' });
 });
