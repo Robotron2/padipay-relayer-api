@@ -10,6 +10,16 @@ const PORT = config.PORT;
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Health Check Endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    service: 'padipay-relayer-api',
+    version: '0.1.0',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // API Routes
 app.use('/api/relayer', relayerRoutes);
 
