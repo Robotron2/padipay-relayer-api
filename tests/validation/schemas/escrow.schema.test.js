@@ -1,0 +1,62 @@
+const { createEscrowSchema, submitEscrowSchema, escrowActionSchema } = require('../../../src/validation/schemas/escrow.schema');
+
+describe('Escrow Schemas', () => {
+  describe('createEscrowSchema', () => {
+    it('should validate correct create escrow payload', () => {
+      const payload = {
+        body: {
+          buyer: 'G_BUYER_ADDRESS',
+          seller: 'G_SELLER_ADDRESS',
+          amount: '1000',
+        }
+      };
+
+      const result = createEscrowSchema.safeParse(payload);
+      expect(result.success).toBe(true);
+    });
+
+    it('should fail if buyer is missing', () => {
+      const payload = { body: { seller: 'G_SELLER_ADDRESS', amount: '1000' } };
+      const result = createEscrowSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+    });
+
+    it('should fail if seller is missing', () => {
+      const payload = { body: { buyer: 'G_BUYER_ADDRESS', amount: '1000' } };
+      const result = createEscrowSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+    });
+
+    it('should fail if amount is missing', () => {
+      const payload = { body: { buyer: 'G_BUYER_ADDRESS', seller: 'G_SELLER_ADDRESS' } };
+      const result = createEscrowSchema.safeParse(payload);
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('submitEscrowSchema', () => {
+    it('should validate valid action types', () => {
+      ['LOCK', 'RELEASE', 'DISPUTE', 'REFUND'].forEach(action => {
+        const result = submitEscrowSchema.safeParse({ body: { actionType: action } });
+        expect(result.success).toBe(true);
+      });
+    });
+
+    it('should fail for invalid action type', () => {
+      const result = submitEscrowSchema.safeParse({ body: { actionType: 'INVALID' } });
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('escrowActionSchema', () => {
+    it('should validate when escrow id is provided', () => {
+      const result = escrowActionSchema.safeParse({ params: { id: '123' } });
+      expect(result.success).toBe(true);
+    });
+
+    it('should fail when escrow id is missing', () => {
+      const result = escrowActionSchema.safeParse({ params: {} });
+      expect(result.success).toBe(false);
+    });
+  });
+});
