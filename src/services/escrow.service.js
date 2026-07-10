@@ -1,21 +1,45 @@
-// TODO: Import stellar.service to submit the constructed transaction
-// const stellarService = require('./stellar.service');
+const StellarSdk = require('stellar-sdk');
+const ValidationError = require('../errors/ValidationError');
 
 /**
- * Processes an escrow action requested by the bot (e.g., locking funds, releasing funds).
- * 
- * TODO:
- * 1. Based on the `actionType` (e.g., 'LOCK', 'RELEASE', 'DISPUTE'), determine which Soroban contract function to invoke.
- * 2. Parse the `params` object to extract required contract arguments (buyer address, seller address, amount, etc.).
- * 3. Construct a Soroban contract invocation transaction (using StellarSdk.Contract and StellarSdk.TransactionBuilder).
- * 4. Convert the built transaction to XDR format.
- * 5. Call stellarService.signAndSubmitTransaction(transactionXDR) to pay the fee and submit it.
- * 6. Return the submission result or transaction ID back to the controller.
- * 
- * @param {string} actionType - The type of escrow action to perform.
- * @param {Object} params - The arguments required for the contract invocation.
+ * Factory function for the Escrow Service.
+ * @param {Object} deps - Dependencies
+ * @param {Object} deps.transactionBuilder - The injected transaction builder.
+ * @param {Object} deps.config - Application configuration.
  */
-exports.processEscrowAction = async (actionType, params) => {
-  // Implementation goes here
-  return { status: 'pending', txId: 'mock_tx_id' };
+const createEscrowService = ({ transactionBuilder, config }) => {
+  /**
+   * Constructs an unsigned contract invocation for creating an escrow.
+   * @param {Object} params - Escrow parameters
+   * @param {string} params.buyer - Buyer's address
+   * @param {string} params.seller - Seller's address
+   * @param {string} params.amount - Escrow amount (string to handle large numbers safely)
+   * @returns {Promise<string>} Base64 encoded unsigned transaction XDR
+   */
+  const createEscrow = async (params) => {
+    if (!params || !params.buyer || !params.seller || !params.amount) {
+      throw new ValidationError('Missing required parameters for createEscrow: buyer, seller, amount');
+    }
+
+    const { buyer, seller, amount } = params;
+
+    const scValParams = [
+      StellarSdk.nativeToScVal(buyer, { type: 'address' }),
+      StellarSdk.nativeToScVal(seller, { type: 'address' }),
+      StellarSdk.nativeToScVal(amount, { type: 'i128' }),
+    ];
+
+    // The relayer sponsor account acts as the transaction source
+    const sourceAddress = StellarSdk.Keypair.fromSecret(config.FEE_BUMP_SECRET_KEY).publicKey();
+
+    return await transactionBuilder.buildTransaction(
+      sourceAddress,
+      'create_escrow',
+      scValParams
+    );
+  };
+
+  return { createEscrow };
 };
+
+module.exports = { createEscrowService };
