@@ -14,7 +14,7 @@ const validate = (schema) => (req, res, next) => {
     next();
   } catch (error) {
     if (error.name === 'ZodError') {
-      const errorMessages = error.errors
+      const errorMessages = error.issues
         .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
         .join(', ');
       return next(new ValidationError(`Validation failed: ${errorMessages}`));
